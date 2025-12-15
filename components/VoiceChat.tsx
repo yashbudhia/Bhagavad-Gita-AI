@@ -20,7 +20,7 @@ export default function VoiceChat() {
   const [error, setError] = useState("");
   const [language, setLanguage] = useState("hi-IN");
   const { token } = useAuth();
-  
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -29,7 +29,9 @@ export default function VoiceChat() {
     try {
       setError("");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm",
+      });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -59,7 +61,9 @@ export default function VoiceChat() {
   const processAudio = async () => {
     setIsProcessing(true);
     try {
-      const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+      const audioBlob = new Blob(audioChunksRef.current, {
+        type: "audio/webm",
+      });
       const base64Audio = await blobToBase64(audioBlob);
 
       // 1. Speech to Text
@@ -68,10 +72,10 @@ export default function VoiceChat() {
         headers: { "Content-Type": "application/json", token: token! },
         body: JSON.stringify({ audio: base64Audio, language }),
       });
-      
+
       if (!sttRes.ok) throw new Error("Speech recognition failed");
       const { transcript } = await sttRes.json();
-      
+
       if (!transcript) throw new Error("Could not understand audio");
 
       setMessages((prev) => [...prev, { sent: true, message: transcript }]);
@@ -80,9 +84,13 @@ export default function VoiceChat() {
       const chatRes = await fetch("/api/voice/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json", token: token! },
-        body: JSON.stringify({ message: transcript, chatHistory: messages, language }),
+        body: JSON.stringify({
+          message: transcript,
+          chatHistory: messages,
+          language,
+        }),
       });
-      
+
       if (!chatRes.ok) throw new Error("AI response failed");
       const { reply } = await chatRes.json();
 
@@ -94,7 +102,7 @@ export default function VoiceChat() {
         headers: { "Content-Type": "application/json", token: token! },
         body: JSON.stringify({ text: reply, language }),
       });
-      
+
       if (!ttsRes.ok) throw new Error("Speech synthesis failed");
       const { audio } = await ttsRes.json();
 
@@ -159,11 +167,27 @@ export default function VoiceChat() {
       >
         {isProcessing ? (
           <svg className="animate-spin h-8 w-8 text-white" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
           </svg>
         ) : (
-          <svg className="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="h-8 w-8 text-white"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
             <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
           </svg>
@@ -172,7 +196,13 @@ export default function VoiceChat() {
 
       <div className="flex items-center gap-3">
         <p className="text-sm text-gray-500">
-          {isRecording ? "Listening... Tap to stop" : isProcessing ? "Processing..." : isSpeaking ? "Speaking..." : "Tap to speak"}
+          {isRecording
+            ? "Listening... Tap to stop"
+            : isProcessing
+            ? "Processing..."
+            : isSpeaking
+            ? "Speaking..."
+            : "Tap to speak"}
         </p>
         <select
           value={language}
@@ -189,7 +219,10 @@ export default function VoiceChat() {
       </div>
 
       {isSpeaking && (
-        <button onClick={stopSpeaking} className="text-sm text-orange-500 hover:underline">
+        <button
+          onClick={stopSpeaking}
+          className="text-sm text-orange-500 hover:underline"
+        >
           Stop Speaking
         </button>
       )}
@@ -207,7 +240,12 @@ export default function VoiceChat() {
           </div>
           <div className="space-y-3 max-h-60 overflow-y-auto">
             {messages.map((msg, i) => (
-              <div key={i} className={`p-3 rounded-lg ${msg.sent ? "bg-orange-100 ml-8" : "bg-gray-100 mr-8"}`}>
+              <div
+                key={i}
+                className={`p-3 rounded-lg ${
+                  msg.sent ? "bg-orange-100 ml-8" : "bg-gray-100 mr-8"
+                }`}
+              >
                 <p className="text-sm">{msg.message}</p>
               </div>
             ))}

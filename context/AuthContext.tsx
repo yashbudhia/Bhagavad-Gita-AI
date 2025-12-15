@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { useCookies } from "react-cookie";
 
 interface User {
@@ -75,7 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token: cookies.Token, login, register, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, token: cookies.Token, login, register, logout, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );

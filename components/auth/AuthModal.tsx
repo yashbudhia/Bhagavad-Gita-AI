@@ -69,9 +69,11 @@ export default function AuthModal({ open, setOpen }: AuthModalProps) {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {error && (
-                    <div className="text-red-500 text-sm text-center">{error}</div>
+                    <div className="text-red-500 text-sm text-center">
+                      {error}
+                    </div>
                   )}
-                  
+
                   <input
                     type="email"
                     placeholder="Email"
@@ -80,7 +82,7 @@ export default function AuthModal({ open, setOpen }: AuthModalProps) {
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                     required
                   />
-                  
+
                   <input
                     type="password"
                     placeholder="Password"
@@ -100,7 +102,9 @@ export default function AuthModal({ open, setOpen }: AuthModalProps) {
                 </form>
 
                 <p className="mt-4 text-center text-sm text-gray-600">
-                  {isLogin ? "Don't have an account? " : "Already have an account? "}
+                  {isLogin
+                    ? "Don't have an account? "
+                    : "Already have an account? "}
                   <button
                     onClick={() => setIsLogin(!isLogin)}
                     className="text-orange-500 hover:underline"

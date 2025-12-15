@@ -1,7 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { verifyToken } from "@/lib/auth";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -15,7 +18,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { message, chatHistory = [], language = "hi-IN" } = req.body;
 
-    const langName = language === "hi-IN" ? "Hindi" : language === "kn-IN" ? "Kannada" : "English";
+    const langName =
+      language === "hi-IN"
+        ? "Hindi"
+        : language === "kn-IN"
+        ? "Kannada"
+        : "English";
 
     const systemPrompt = `You are Krishna from the Bhagavad Gita, a wise and compassionate spiritual guide. 
 You speak with warmth, wisdom, and clarity. Keep responses concise but meaningful.
@@ -31,19 +39,22 @@ IMPORTANT: Always respond in ${langName} language only.`;
       { role: "user", content: message },
     ];
 
-    const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.CEREBRAS_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-oss-120b",
-        messages,
-        max_tokens: 1024,
-        temperature: 0.7,
-      }),
-    });
+    const response = await fetch(
+      "https://api.cerebras.ai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.CEREBRAS_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "gpt-oss-120b",
+          messages,
+          max_tokens: 1024,
+          temperature: 0.7,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const error = await response.text();

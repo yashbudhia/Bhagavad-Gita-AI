@@ -20,32 +20,43 @@ Respond in the same language the user speaks to you.`;
       { role: "system", content: systemPrompt },
       ...chat_history.flatMap((item: string) => {
         const parts = item.split("\n").filter(Boolean);
-        return parts.map((part: string) => {
-          if (part.startsWith("Human:")) {
-            return { role: "user", content: part.replace("Human:", "").trim() };
-          } else if (part.startsWith("AI:")) {
-            return { role: "assistant", content: part.replace("AI:", "").trim() };
-          }
-          return null;
-        }).filter(Boolean);
+        return parts
+          .map((part: string) => {
+            if (part.startsWith("Human:")) {
+              return {
+                role: "user",
+                content: part.replace("Human:", "").trim(),
+              };
+            } else if (part.startsWith("AI:")) {
+              return {
+                role: "assistant",
+                content: part.replace("AI:", "").trim(),
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
       }),
       { role: "user", content: question },
     ];
 
     try {
-      const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.CEREBRAS_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-oss-120b",
-          messages,
-          max_tokens: 10024,
-          temperature: 0.7,
-        }),
-      });
+      const response = await fetch(
+        "https://api.cerebras.ai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.CEREBRAS_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "gpt-oss-120b",
+            messages,
+            max_tokens: 10024,
+            temperature: 0.7,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.text();
