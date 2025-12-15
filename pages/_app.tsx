@@ -1,9 +1,6 @@
 import "@/styles/globals.css";
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
-import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
-import { useState } from "react";
 import { CookiesProvider } from "react-cookie";
-import "@/styles/globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 import type { AppProps } from "next/app";
 import PlausibleProvider from "next-plausible";
 import Script from "next/script";
@@ -21,22 +18,13 @@ const GA_SCRIPT_TAG = `
   });
 `;
 
-export default function App({
-  Component,
-  pageProps,
-}: AppProps<{
-  initialSession: Session;
-}>) {
-  const [supabaseClient] = useState(() => createBrowserSupabaseClient());
+export default function App({ Component, pageProps }: AppProps) {
   return (
     <PlausibleProvider domain="bhagavadgita.ai" trackOutboundLinks>
       <CookiesProvider>
-        <SessionContextProvider
-          supabaseClient={supabaseClient}
-          initialSession={pageProps.initialSession}
-        >
+        <AuthProvider>
           <Component {...pageProps} />
-        </SessionContextProvider>
+        </AuthProvider>
       </CookiesProvider>
       <Script
         strategy="lazyOnload"

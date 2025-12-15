@@ -2,6 +2,7 @@ import ChatSection from "@/components/ChatSection";
 import Header from "@/components/Header";
 import Input from "@/components/Input";
 import Navbar from "@/components/Navbar";
+import VoiceChat from "@/components/VoiceChat";
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import { useCookies } from "react-cookie";
@@ -11,6 +12,7 @@ export default function Home() {
   const [showSuggestions, setShowSuggestions] = useState<boolean>(true);
   const [input, setInput] = useState<string>("");
   const [chat, setChat] = useState<Array<{ sent: boolean; message: string }>>();
+  const [mode, setMode] = useState<"text" | "voice">("text");
   const [cookies, setCookie, removeCookie] = useCookies(["Token"]);
   const router = useRouter();
 
@@ -21,7 +23,7 @@ export default function Home() {
     if (access_token && access_token.length > 1) {
       setCookie("Token", access_token[1]);
     }
-  }, [router.query]);
+  }, [router.asPath, router.query, setCookie]);
 
   function addJsonLd() {
     return {
@@ -57,9 +59,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>
-          Bhagavad Gita AI - Gita GPT - Ask Krishna
-        </title>
+        <title>KarmatGPT - Your AI Spiritual Companion</title>
         <link
           rel="icon"
           type="image/png"
@@ -116,20 +116,78 @@ export default function Home() {
           key="gita-jsonld"
         />
       </Head>
-      <Navbar></Navbar>
-      <main className="max-w-4xl pt-5 pb-2 mx-auto h-[90vh] grid grid-rows-layout gap-2 px-4">
+      <div 
+        className="min-h-screen"
+        style={{
+          backgroundImage: "url('/71r0eqGN+ML._AC_UF894,1000_QL80_.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "top center",
+          backgroundAttachment: "fixed",
+        }}
+      >
+        <div className="min-h-screen bg-white/80">
+          <Navbar></Navbar>
+          <main className="max-w-4xl pt-5 pb-2 mx-auto h-[90vh] grid grid-rows-layout gap-2 px-4">
         <Header />
-        <ChatSection chat={chat} />
+        
+        {/* Mode Toggle */}
+        <div className="flex flex-row justify-center items-center gap-1 mb-2">
+          <button
+            onClick={() => setMode("text")}
+            className={`px-3 py-1.5 rounded-l-lg text-xs font-medium transition-all border ${
+              mode === "text" 
+                ? "bg-orange-500 text-white border-orange-500" 
+                : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+            }`}
+          >
+            💬 Text
+          </button>
+          <button
+            onClick={() => setMode("voice")}
+            className={`px-3 py-1.5 rounded-r-lg text-xs font-medium transition-all border border-l-0 ${
+              mode === "voice" 
+                ? "bg-orange-500 text-white border-orange-500" 
+                : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+            }`}
+          >
+            🎤 Voice
+          </button>
+        </div>
 
-        <Input
-          showSuggestions={showSuggestions}
-          setShowSuggestions={setShowSuggestions}
-          input={input}
-          setInput={setInput}
-          chat={chat}
-          setChat={setChat}
-        />
+        {mode === "text" ? (
+          <>
+            <ChatSection chat={chat} />
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Input
+                  showSuggestions={showSuggestions}
+                  setShowSuggestions={setShowSuggestions}
+                  input={input}
+                  setInput={setInput}
+                  chat={chat}
+                  setChat={setChat}
+                />
+              </div>
+              {chat && chat.length > 0 && (
+                <button
+                  onClick={() => {
+                    setChat(undefined);
+                    setShowSuggestions(true);
+                  }}
+                  className="h-12 px-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                  title="Reset chat"
+                >
+                  🗑️
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <VoiceChat />
+        )}
       </main>
+        </div>
+      </div>
     </>
   );
 }

@@ -19,10 +19,10 @@ const ChatSection = ({ chat }: ChatSectionProps) => {
   return (
     <section className="overflow-auto scrollbar-none pr-2">
       <ChatBubble
-        message="Radhey Radhey, I am Gita AI, a repository of knowledge and wisdom. Allow me to assist you by answering any inquiries you may have. Ask me anything."
+        message="Radhey Radhey, I am Pandit AI, a repository of knowledge and wisdom. Allow me to assist you by answering any inquiries you may have. Ask me anything."
         sent={false}
       />
-      {chat?.map((item, index) => (
+      {chat?.filter((item) => item.message && item.message.trim()).map((item, index) => (
         <div key={index}>
           <ChatBubble message={item.message} sent={item.sent} />
           <div ref={messagesEndRef} />

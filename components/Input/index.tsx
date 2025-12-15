@@ -1,10 +1,9 @@
-import SupaAuthModal from "@/components/auth/SupaAuthModal";
-import { useCookies } from "react-cookie";
-
 import React, { useState, SetStateAction, useEffect } from "react";
 import SuggestionBox from "./SuggestionBox";
 import { GenerateAnswer } from "@/apiFunctions/generate";
 import { usePlausible } from "next-plausible";
+import { useAuth } from "@/context/AuthContext";
+import AuthModal from "@/components/auth/AuthModal";
 
 interface InputProps {
   showSuggestions: boolean;
@@ -15,9 +14,6 @@ interface InputProps {
   setChat: React.Dispatch<
     SetStateAction<Array<{ sent: boolean; message: string }> | undefined>
   >;
-}
-interface Error {
-  status?: number;
 }
 
 const Input = ({
@@ -31,14 +27,22 @@ const Input = ({
   const plausible = usePlausible();
   const [loading, setLoading] = useState<boolean>(false);
   const [chatHistory, setChatHistory] = useState<Array<string>>([]);
-  const [open, setOpen] = useState<boolean>(false);
-  const [cookies, setCookie, removeCookie] = useCookies(["Token"]);
+  const [authOpen, setAuthOpen] = useState<boolean>(false);
+  const { token } = useAuth();
+
+  // Reset chatHistory when chat is cleared
+  useEffect(() => {
+    if (!chat || chat.length === 0) {
+      setChatHistory([]);
+    }
+  }, [chat]);
 
   const handleGenerate = async () => {
-    const token = cookies?.Token;
     if (!token) {
-      setOpen(true);
+      setAuthOpen(true);
+      return;
     }
+
     try {
       setLoading(true);
       const data = await GenerateAnswer({
@@ -51,26 +55,21 @@ const Input = ({
       data.chat_history.map((item: string) => {
         item.split("\n")?.map((chat_message: string) => {
           if (chat_message.startsWith("Human:")) {
-            chatArray.push({
-              sent: true,
-              message: chat_message.split("Human:")[1],
-            });
-          } else {
-            chatArray.push({
-              sent: false,
-              message: chat_message.split("AI:")[1],
-            });
+            const msg = chat_message.replace("Human:", "").trim();
+            if (msg) chatArray.push({ sent: true, message: msg });
+          } else if (chat_message.startsWith("AI:")) {
+            const msg = chat_message.replace("AI:", "").trim();
+            if (msg) chatArray.push({ sent: false, message: msg });
           }
         });
       });
       setChat(chatArray);
       setShowSuggestions(false);
       setInput("");
-    } catch (err: Error | any) {
+    } catch (err: any) {
       if (err?.response?.status === 401) {
-        setOpen(true);
-      }
-      if (err?.response?.status === 429) {
+        setAuthOpen(true);
+      } else if (err?.response?.status === 429) {
         let history = chat;
         history?.push({
           sent: false,
@@ -156,7 +155,7 @@ const Input = ({
           )}
         </button>
       </div>
-      <SupaAuthModal open={open} setOpen={setOpen} />
+      <AuthModal open={authOpen} setOpen={setAuthOpen} />
     </div>
   );
 };
